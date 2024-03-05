@@ -13,8 +13,6 @@ This is a guide on how to Developing and Deploying a Basic Web Application on **
 * Understand how to use **Amazon ECR** to store and manage **container images**.<br>
 * Learn the basics of creating and managing an **Amazon ECS cluster**.<br>
 * Learn about **ECS** and its role in orchestrating containerized applications, including **task definitions**, **clusters**, and **services**.
-* Explore concepts such as **load balancing**, **auto scaling**, and **fault tolerance** in the context of ECS.
-* Gain hands-on experience by deploying and managing the "Hello World" web application on ECS, **monitoring** its performance and **scalability**.<br>
 
 Whether you are new to **Amazon ECS** or looking to level up your skills, this repository has you covered.<br>
 
