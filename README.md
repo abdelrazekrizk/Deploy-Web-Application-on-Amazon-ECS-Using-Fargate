@@ -1,6 +1,4 @@
-# Deploy-Ci-Cd-Pipeline-for-a-Containerized-Web-Application-on-Amazon-ECS
-
-# [Developing and Deploying a Basic Web Application on Amazon ECS](../Automating-the-Developing-and-Deploying-a-Basic-Web-Application-on-Amazon-EKS/README.md)
+# Developing and Deploying a Basic Web Application on Amazon ECS Using Fargate
 
 
 **Architecture Diagram:**
@@ -42,7 +40,7 @@ Below are the steps to follow:
 - [Step 10: Cleanup](#step-10-cleanup)
 
 ## Step 1: Create a NodeJS Server Web Application.
-Create a basic `Node.js Server Web Application`. <br> [app.py](./app/app.py):
+Create a basic `Node.js Server Web Application`. <br> [server.js](./app/server.js):
 
 ## Step 2: Create a Dockerfile
 Create a `Dockerfile` to containerize the Flask application.<br> [Dockerfile](./app/Dockerfile):
@@ -335,4 +333,3 @@ aws ec2 terminate-instances \
 
   Keep in mind that this example is minimal and focuses on the basic steps. <br>
   In a production scenario, you would likely include more `features`, `security measures`, and `configurations`.<br>
-  Additionally, you might want to explore tools like `Helm` for managing `Kubernetes manifests` more efficiently.
