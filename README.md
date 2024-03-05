@@ -8,7 +8,6 @@
 This is a guide on how to Developing and Deploying a Basic Web Application on **Amazon ECS** <br>
 ## Learning Objectives:
 
-*
 * Gain hands-on experience with containerization using **Docker**.<br>
 * Understand how to use **Amazon ECR** to store and manage **container images**.<br>
 * Learn the basics of creating and managing an **Amazon ECS cluster**.<br>
