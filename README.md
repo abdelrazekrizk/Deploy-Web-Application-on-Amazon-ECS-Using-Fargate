@@ -164,13 +164,202 @@ docker pull public.ecr.aws/g7p1j8g3/hello-flask:v.1
 Follow the Official Amazon Quick start: Publishing to `Amazon ECR Public` using the AWS CLI [here](https://docs.aws.amazon.com/AmazonECR/latest/public/getting-started-cli.html).
 
 ## Step 5: Create an Amazon VPC.
-- Create an Amazon VPC with public and private subnets that meets Amazon EKS requirements.
+- you can create VPC using `AWS CLI`or `cloudformation`
+- Create an Amazon VPC in `two availability zone` with `two Public` and `two Private subnets` and configure `security group` rules to allow traffic on **Port 3000**using `AWS CLI`.
+
+### 5.1. Create VPC:
+- Open a terminal or command prompt and run the following command:.
+```
+aws ec2 create-vpc \
+    --cidr-block <CIDR block> \
+    --region <your-region> \
+    --tag-specification ResourceType=vpc,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<CIDR block>` with your desired **CIDR block.**`ex: 10.0.0.0/16`.<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>`  with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-VPC"},{Key=Owner,Value="Network Team"}]'`.<br>
+
+* Retrieve the VPC ID:
+
+```
+aws ec2 describe-vpcs \
+        --query 'Vpcs[0].VpcId'
+```
+- outputs
+
+```
+"vpc-0fc3b7820d89cea5a"
+```
+- Make note and write down `VpcId`:<br>
+
+### 5.2. Create Internet Gateway:
+- allows communication between your VPC and the internet.
+```
+aws ec2 create-internet-gateway \
+        --region <your-region> \
+        --tag-specification ResourceType=internet-gateway,Tags='<Tags>'
+```
+### 5.3. Attach Internet Gateway to VPC:
+* Retrieve the Internet Gateway ID:
+```
+aws ec2 describe-internet-gateways \
+        --query 'InternetGateways[0].InternetGatewayId'
+```
+- outputs
+
+```
+"igw-024ee93e80e7ca1ec"
+```
+- Make note and write down `InternetGatewayId`:<br>
+
+```
+aws ec2 attach-internet-gateway \
+        --internet-gateway-id <Internet-Gateway-ID> \
+        --vpc-id <VPC_ID>
+```
+- **Replace:**<br>
+`<VPC_ID>` with your Retrieved **VPC ID** .<br>
+`<Internet-Gateway-ID>` with your Retrieved **INTERNET GATEWAY ID** .<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS Internet-Gateway"},{Key=Owner,Value="Network Team"}]'`.<br>
+
+### 5.4. Create Subnets:
+- Create two Subnets on one availability zone .
+```
+aws ec2 create-subnet \
+        --vpc-id <VPC_ID> \
+        --cidr-block <CIDR block> \
+        --region <your-region> \
+        --availability-zone <your-az-1> \
+        --tag-specification ResourceType=subnet,Tags='<Tags>'
+```
+- Create two Subnets on second availability zone .
+```
+aws ec2 create-subnet \
+        --vpc-id <VPC_ID> \
+        --cidr-block <CIDR block> \
+        --region <your-region> \
+        --availability-zone <your-az-2> \
+        --tag-specification ResourceType=subnet,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<VPC_ID>` with your Retrieved **VPC ID** .<br>
+`<CIDR block>` with your desired **CIDR block.** `ex: 10.0.1.0/24`.<br>
+`<your-region>` with your desired **region**.<br>
+`<your-az-1>,<your-az-2> with your desired **availability zones** `ex: us-east-1c`.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS private subnets_1"},{Key=Owner,Value="Network Team"}]'`.<br>
+
+Make note and write down:<br>
+            - Subnets IDs in the **VPC** `<PrivateSubnet01>, <PrivateSubnet02>, <PublicSubnet01>, <PublicSubnet02>`.<br>
+
+### 5.5. Create an Elastic IP (EIP):
+- Allocates two Elastic IP address
+```
+aws ec2 allocate-address \
+        --domain vpc <VPC_ID> \
+        --region <your-region> \
+        --tag-specification ResourceType=elastic-ip,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<VPC_ID>` with your Retrieved **VPC ID** .<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-elastic-ip"},{Key=Owner,Value="Network Team"}]'`.<br>
+
+### 5.6. Create a NAT Gateway:
+- Creates `two` **NAT gateway** for each **Public Subnet**
+```
+aws ec2 create-nat-gateway \
+        --subnet-id <subnet-id> \
+        --allocation-id <Elastic IP-id> \
+        --region <your-region> \
+        --tag-specification ResourceType=natgateway,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<subnet-id>` with your Retrieved public **subnet-id** .<br>
+`<Elastic IP-id>` with your Retrieved **region**.<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-NAT-Gateway"},{Key=Owner,Value="Network Team"}]'`.<br>
+
+### 5.7. Create Route Table:
+- Creates `four` Route Table for your VPC
+```
+aws ec2 create-route-table \
+        --vpc-id <VPC-ID> \
+        --region <your-region> \
+        --tag-specification ResourceType=route-table,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<VPC-ID>` with your Retrieved **<VPC-ID>** .<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-pub-sub-1-route-table"},{Key=Owner,Value="Network Team"}]'`.<br>
+
+### 5.8. Associates a Route Table with Subnets:
+- Associates each public subnet in your VPC to your public route table
+- Associates each private subnet in your VPC to your each private route table
+```
+aws ec2 associate-route-table \
+        --route-table-id <route-table-id> \
+        --subnet-id <subnet-id>
+```
+- **Replace:**<br>
+`<subnet-id>` with your Retrieved **subnet-id** .<br>
+`<route-table-id>` with your Retrieved **Route Table ID**.<br>
+
+### 5.9. Add Routes to the Route Table :
+- Creates a route betwen `private route` table and `NAT gateway `
+```
+aws ec2 create-route \
+        --route-table-id <route-table-id> \
+        --destination-cidr-block 0.0.0.0/0 \
+        --gateway-id <Internet-Gateway-ID>
+```
+- **Replace:**<br>
+`<route-table-id>` with your Retrieved **Route Table ID**.<br>
+`<gateway-id>` with your Retrieved **NAT Gateway ID**.<br>
+
+### 5.10. Create Security Group:
+```
+aws ec2 create-security-group \
+        --group-name <security-group-name> \
+        --description <Description> \
+        --vpc-id <VPC_ID> \
+        --region <your-region> \
+        --tag-specification ResourceType=security-group,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<security-group-name>` with your desired **security-group-name** .<br>
+`<Description>` with your **security group description** `ex: "Security group for port 3000" `.<br>
+`<VPC_ID>` with your Retrieved **VPC ID** .<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-security-group"},{Key=Owner,Value="security Team"}]'`.<br>
+
+### 5.11. Configure Security Group Ingress Rules:
+```
+aws ec2 authorize-security-group-ingress \
+        --group-id <security-group-id> \
+        --protocol <protocol> \
+        --port <port> \
+        --cidr <cidr> \
+        --region <your-region> \
+        --tag-specification ResourceType=security-group-rule,Tags='<Tags>'
+```
+- **Replace:**<br>
+`<security-group-id>` with your Retrieved **security group ID** .<br>
+`<protocol>` with your desired **protocol** `ex: protocol name (tcp , udp , icmp , icmpv6 ) or number` [Protocol_Numbers](http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml).<br>
+`<port>` with **port** for the application to listen on. `ex: 3000 `.<br>
+`<cidr>` with your desired **IPv4 CIDR range** `ex: 0.0.0.0/0` .<br>
+`<your-region>` with your desired **region**.<br>
+`<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-security-group"},{Key=Owner,Value="security Team"}]'`.<br>
+
+### 5.12. Create an Amazon VPC using cloud formation.
+- Create an Amazon VPC with public and private subnets that meets Amazon ECS requirements.
 - Open a terminal or command prompt and navigate to the **cloudformation directory** and run the following command:.
 
         aws cloudformation create-stack \
             --region <your-region> \
             --stack-name <stack-name> \
-            --template-body file://amazon-eks-vpc-private-subnets.yaml
+            --template-body file://amazon-ECS-vpc-private-subnets.yaml
 
 - **Replace:**<br>
 `<your-region>` with your **region**.<br>
@@ -194,6 +383,7 @@ aws ecs create-cluster \
 `<your-region>` with your desired **region**.<br>
 `<tag>`  your **tag** : Add tags for better organization `ex: Replace <tag> with Key=name,Value=ECS-project key=dep,value=dev.`<br>
 Follow the Official Creating a cluster with a Fargate Linux task using the AWS CLI [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_AWSCLI_Fargate.html)
+
 ## Step 6: Create a Task Definition:
 ```
 aws ecs register-task-definition \
@@ -204,7 +394,7 @@ aws ecs register-task-definition \
         --cpu "<cpu>" \
         --memory "<memory>" \
         --container-definitions '[{"name":"<container-name>","image":"<aws_account_id>.dkr.ecr.<your-region>.amazonaws.com/<image-name>:<tag>","essential":true,"portMappings":[{"containerPort":<container-Port>,"protocol":"tcp"}]}]' \
-        --tags <tag> \
+        --tags <tag>
 ```
 - **Replace:**<br>
 `<task-name>` with your **task-name** .<br>
@@ -234,7 +424,7 @@ aws ecs create-service \
         --launch-type <launch-type> \
         --region <your-region> \
         --network-configuration "awsvpcConfiguration={subnets=[<PublicSubnet01>,<PublicSubnet02>,<PrivateSubnet01>,<PrivateSubnet02>],securityGroups=[<Security-GroupIds>],assignPublicIp=ENABLED}" \
-        --tags <tag> \
+        --tags <tag>
 ```
 - **Replace:**<br>
 `<cluster-name>` with your **cluster name**. <br>
@@ -299,7 +489,7 @@ aws ecs delete-cluster \
 - **Replace:**<br>
 `<cluster-name>` with your **cluster name**. <br>
 
-### 12.5. CloudFormation Stack:
+### 12.3. CloudFormation Stack:
 ```
 aws cloudformation delete-stack \
   --stack-name <stack-name>
