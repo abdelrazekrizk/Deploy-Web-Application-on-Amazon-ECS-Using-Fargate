@@ -32,7 +32,7 @@ Below are the steps to follow:
 - [Step 5: Create an Amazon VPC](#step-5-create-an-amazon-vpc)
 - [Step 6: Set Up Amazon ECS](#step-6-set-up-amazon-ecs)
 - [Step 7: Create a Task Definition](#step-7-create-a-task-definition)
-- [Step 8: Create an ECS Service](#step-8-create-an-ecs-service)
+- [Step 8: Deploy the Application](#step-8-deploy-the-application)
 - [Step 9: Test The Application](#step-9-test-the-application)
 - [Step 10: Cleanup](#step-10-cleanup)
 
@@ -366,7 +366,7 @@ aws ec2 authorize-security-group-ingress \
 `<stack-name>` with your **stack-name**.<br>
 
 - Navigate to the `cloud-formation outputs` Make note and write down:<br>
-            - Subnets IDs in the **VPC** `<PrivateSubnet01>, <PrivateSubnet02>, <PublicSubnet01>, <PublicSubnet02>`<br>
+            - **Subnets IDs** in the **VPC** `<PrivateSubnet01>, <PrivateSubnet02>, <PublicSubnet01>, <PublicSubnet02>`<br>
             - **SecurityGroups** `<Security group>`
             -
 ## Step 6: Set Up Amazon ECS.
@@ -384,7 +384,7 @@ aws ecs create-cluster \
 `<tag>`  your **tag** : Add tags for better organization `ex: Replace <tag> with Key=name,Value=ECS-project key=dep,value=dev.`<br>
 Follow the Official Creating a cluster with a Fargate Linux task using the AWS CLI [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_AWSCLI_Fargate.html)
 
-## Step 6: Create a Task Definition:
+## Step 7: Create a Task Definition:
 ```
 aws ecs register-task-definition \
         --family <task-name> \
@@ -412,9 +412,9 @@ aws ecs register-task-definition \
 Follow the Official Amazon ECR image and task definition [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/example_task_definitions.html#example_task_definition-iam)
 and [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_AWSCLI_EC2.html#AWSCLI_EC2_register_task_definition)
 
-## Step 7: Deploy the Application
+## Step 8: Deploy the Application
 
-### 7.1.Create an ECS Service launch Type FARGATE:
+### 8.1.Create an ECS Service launch Type FARGATE:
 ```
 aws ecs create-service \
         --cluster <cluster-name> \
@@ -453,7 +453,7 @@ aws ecs create-service \
 - Cleaning up your resources is an important part of managing your cloud environment. <br>
 - By following these steps, you can ensure that your resources are always **clean** and **tidy** and it will also help you to **avoid unnecessary costs**.
 
-### 12.1. Deregister Task Definitions:
+### 10.1. Deregister Task Definitions:
 ```
 aws ecs deregister-task-definition \
         --task-definition <task-name>
@@ -461,7 +461,7 @@ aws ecs deregister-task-definition \
 - **Replace:**<br>
 `<task-name>` with your **task-name** .<br>
 
-### 12.1. Delete Task Definitions:
+### 10.2. Delete Task Definitions:
 ```
 aws ecs delete-task-definitions \
         --task-definition <task-name>
@@ -469,7 +469,7 @@ aws ecs delete-task-definitions \
 - **Replace:**<br>
 `<task-name>` with your **task-name** .<br>
 
-### 12.1. Delete Service:
+### 10.3. Delete Service:
 ```
  aws ecs delete-service \
         --cluster <cluster-name> \
@@ -481,7 +481,7 @@ aws ecs delete-task-definitions \
 `<service-name>` with your **service name**. <br>
 `<task-name>` with your **task-name** .<br>
 
-### 12.1. Delete Cluster:
+### 10.4. Delete Cluster:
 ```
 aws ecs delete-cluster \
          --cluster <cluster-name>
@@ -489,7 +489,7 @@ aws ecs delete-cluster \
 - **Replace:**<br>
 `<cluster-name>` with your **cluster name**. <br>
 
-### 12.3. CloudFormation Stack:
+### 10.5. CloudFormation Stack:
 ```
 aws cloudformation delete-stack \
   --stack-name <stack-name>
@@ -497,7 +497,7 @@ aws cloudformation delete-stack \
 - **Replace:**<br>
 `<stack-name>` with your **stack-name**. <br>
 
-### 12.6. EC2 (Stop or Terminate):
+### 10.6. EC2 (Stop or Terminate):
 
 * To stop an EC2 instance:
 
