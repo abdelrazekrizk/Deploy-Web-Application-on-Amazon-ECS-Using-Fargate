@@ -3,7 +3,7 @@
 
 **Architecture Diagram:**
 
-<img src="./Architecture/Web-Application-Autoscaling.png" width="1000"/>
+<img src="./Architecture/Developing and Deploying a Basic Web Application on Amazon ECS Using Fargate.png" width="1000"/>
 
 This is a guide on how to Developing and Deploying a Basic Web Application on **Amazon ECS** <br>
 ## Learning Objectives:
@@ -353,7 +353,7 @@ aws ec2 authorize-security-group-ingress \
 `<Tags>` with your desired **Tags** `ex: Tags='[{Key=Name,Value="ECS-security-group"},{Key=Owner,Value="security Team"}]'`.<br>
 
 ### 5.12. Create an Amazon VPC using cloud formation.
-- Create an Amazon VPC with public and private subnets that meets Amazon ECS requirements.
+- Create an Amazon VPC in `two availability zone` with `two Public` and `two Private subnets` for Amazon ECS .
 - Open a terminal or command prompt and navigate to the **cloudformation directory** and run the following command:.
 
         aws cloudformation create-stack \
